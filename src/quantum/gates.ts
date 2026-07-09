@@ -58,3 +58,54 @@ export const SWAP: Gate = [
   [c(0), c(1), c(0), c(0)],
   [c(0), c(0), c(0), c(1)],
 ]
+
+export function rx(theta: number): Gate {
+  const cos = Math.cos(theta / 2)
+  const sin = Math.sin(theta / 2)
+  return [
+    [c(cos), c(0, -sin)],
+    [c(0, -sin), c(cos)],
+  ]
+}
+
+export function ry(theta: number): Gate {
+  const cos = Math.cos(theta / 2)
+  const sin = Math.sin(theta / 2)
+  return [
+    [c(cos), c(-sin)],
+    [c(sin), c(cos)],
+  ]
+}
+
+export function rz(theta: number): Gate {
+  return [
+    [c(Math.cos(-theta / 2), Math.sin(-theta / 2)), c(0)],
+    [c(0), c(Math.cos(theta / 2), Math.sin(theta / 2))],
+  ]
+}
+
+export type GateId = 'I' | 'X' | 'Y' | 'Z' | 'H' | 'S' | 'T' | 'RX' | 'RY' | 'RZ' | 'CNOT' | 'SWAP'
+
+export interface GateDefinition {
+  id: GateId
+  arity: number
+  /** Names of the numeric parameters `matrix` expects, e.g. ['theta'] for rotation gates. */
+  paramNames: readonly string[]
+  matrix: (params?: Record<string, number>) => Gate
+}
+
+/** Single source of truth for turning a placed gate (id + params) into a concrete matrix. */
+export const GATE_DEFINITIONS: Record<GateId, GateDefinition> = {
+  I: { id: 'I', arity: 1, paramNames: [], matrix: () => I },
+  X: { id: 'X', arity: 1, paramNames: [], matrix: () => X },
+  Y: { id: 'Y', arity: 1, paramNames: [], matrix: () => Y },
+  Z: { id: 'Z', arity: 1, paramNames: [], matrix: () => Z },
+  H: { id: 'H', arity: 1, paramNames: [], matrix: () => H },
+  S: { id: 'S', arity: 1, paramNames: [], matrix: () => S },
+  T: { id: 'T', arity: 1, paramNames: [], matrix: () => T },
+  RX: { id: 'RX', arity: 1, paramNames: ['theta'], matrix: (p) => rx(p?.theta ?? 0) },
+  RY: { id: 'RY', arity: 1, paramNames: ['theta'], matrix: (p) => ry(p?.theta ?? 0) },
+  RZ: { id: 'RZ', arity: 1, paramNames: ['theta'], matrix: (p) => rz(p?.theta ?? 0) },
+  CNOT: { id: 'CNOT', arity: 2, paramNames: [], matrix: () => CNOT },
+  SWAP: { id: 'SWAP', arity: 2, paramNames: [], matrix: () => SWAP },
+}

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { add, complex, conj, equalsApprox, mul, ZERO } from './complex'
-import { CNOT, type Gate, H, I, S, SWAP, T, X, Y, Z } from './gates'
+import { CNOT, GATE_DEFINITIONS, type Gate, H, I, rx, ry, rz, S, SWAP, T, X, Y, Z } from './gates'
 
 /** G is unitary iff G * G^dagger === identity. */
 function isUnitary(gate: Gate): boolean {
@@ -17,6 +17,15 @@ function isUnitary(gate: Gate): boolean {
     }
   }
   return true
+}
+
+/** Element-wise approximate comparison — trig-derived matrices can land on -0 vs 0. */
+function expectGateApprox(actual: Gate, expected: Gate) {
+  for (let row = 0; row < expected.length; row++) {
+    for (let col = 0; col < expected[row].length; col++) {
+      expect(equalsApprox(actual[row][col], expected[row][col])).toBe(true)
+    }
+  }
 }
 
 describe('gates', () => {
@@ -47,5 +56,44 @@ describe('gates', () => {
   it('SWAP exchanges the two qubits', () => {
     expect(SWAP[1]).toEqual([complex(0), complex(0), complex(1), complex(0)]) // |01> -> |10>
     expect(SWAP[2]).toEqual([complex(0), complex(1), complex(0), complex(0)]) // |10> -> |01>
+  })
+})
+
+describe('rotation gates', () => {
+  it.each([
+    ['RX(0.7)', rx(0.7)],
+    ['RY(1.3)', ry(1.3)],
+    ['RZ(-2.1)', rz(-2.1)],
+  ])('%s is unitary', (_name, gate) => {
+    expect(isUnitary(gate)).toBe(true)
+  })
+
+  it('RX(0) and RY(0) and RZ(0) are the identity', () => {
+    expectGateApprox(rx(0), I)
+    expectGateApprox(ry(0), I)
+    expectGateApprox(rz(0), I)
+  })
+
+  it('RY(pi) maps |0> to |1>, same as X (both real-valued rotations)', () => {
+    // acting on |0> reads off the matrix's first column
+    expect(equalsApprox(ry(Math.PI)[0][0], X[0][0])).toBe(true)
+    expect(equalsApprox(ry(Math.PI)[1][0], X[1][0])).toBe(true)
+  })
+})
+
+describe('GATE_DEFINITIONS', () => {
+  it('reports arity matching each matrix dimension', () => {
+    for (const def of Object.values(GATE_DEFINITIONS)) {
+      const dim = def.matrix(def.paramNames.length ? { theta: 0.5 } : undefined).length
+      expect(dim).toBe(1 << def.arity)
+    }
+  })
+
+  it('resolves RX with the given theta', () => {
+    expect(GATE_DEFINITIONS.RX.matrix({ theta: 0.7 })).toEqual(rx(0.7))
+  })
+
+  it('defaults theta to 0 when omitted', () => {
+    expectGateApprox(GATE_DEFINITIONS.RZ.matrix(), I)
   })
 })
