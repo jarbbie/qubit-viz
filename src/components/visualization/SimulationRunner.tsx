@@ -2,6 +2,9 @@ import { useEffect, useState } from 'react'
 import { useCircuitStore } from '../../store/circuitStore'
 
 const STEP_DURATION_MS = 700
+// Beyond this many steps, numbers would start wrapping onto a second line,
+// so switch to plain tick marks instead of collapsing the layout.
+const MAX_NUMBERED_TICKS = 17
 
 export function SimulationRunner() {
   const historyLength = useCircuitStore((s) => s.history.length)
@@ -29,6 +32,12 @@ export function SimulationRunner() {
     setIsPlaying((p) => !p)
   }
 
+  const maxStepIndex = Math.max(historyLength - 1, 0)
+
+  function goToStep(index: number) {
+    setCurrentStepIndex(Math.min(Math.max(index, 0), maxStepIndex))
+  }
+
   return (
     <div className="border border-neutral-700 p-4">
       <h2 className="mb-4 font-mono text-xs tracking-widest text-neutral-400 uppercase">Simulation runner</h2>
@@ -45,17 +54,52 @@ export function SimulationRunner() {
           <input
             type="range"
             min={0}
-            max={Math.max(historyLength - 1, 0)}
+            max={maxStepIndex}
             value={currentStepIndex}
             onChange={(e) => setCurrentStepIndex(Number(e.target.value))}
             disabled={!canPlay}
             className="w-full accent-sky-400"
           />
-          <div className="mt-1 flex flex-wrap justify-between gap-x-2 font-mono text-[10px] text-neutral-500">
-            {Array.from({ length: historyLength }, (_, i) => (
-              <span key={i}>{i}</span>
-            ))}
+          <div className="mt-1.5 flex items-end justify-between gap-x-2 font-mono text-[10px] text-neutral-500">
+            {Array.from({ length: historyLength }, (_, i) =>
+              historyLength <= MAX_NUMBERED_TICKS ? (
+                <span key={i}>{i}</span>
+              ) : (
+                <span key={i} className="h-2 w-px bg-neutral-700" />
+              ),
+            )}
           </div>
+        </div>
+        <div className="flex shrink-0 items-center gap-1.5 font-mono text-xs text-neutral-400">
+          <button
+            type="button"
+            onClick={() => goToStep(currentStepIndex - 1)}
+            disabled={!canPlay || currentStepIndex <= 0}
+            className="flex h-6 w-6 items-center justify-center border border-neutral-600 text-neutral-300 hover:border-sky-400 hover:text-sky-400 disabled:opacity-30 disabled:hover:border-neutral-600 disabled:hover:text-neutral-300"
+          >
+            −
+          </button>
+          <input
+            type="number"
+            min={0}
+            max={maxStepIndex}
+            value={currentStepIndex}
+            disabled={!canPlay}
+            onChange={(e) => {
+              const parsed = Number(e.target.value)
+              if (!Number.isNaN(parsed)) goToStep(Math.round(parsed))
+            }}
+            className="w-14 appearance-none border border-neutral-600 bg-neutral-900 px-1 py-1 text-center text-neutral-100 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+          />
+          <button
+            type="button"
+            onClick={() => goToStep(currentStepIndex + 1)}
+            disabled={!canPlay || currentStepIndex >= maxStepIndex}
+            className="flex h-6 w-6 items-center justify-center border border-neutral-600 text-neutral-300 hover:border-sky-400 hover:text-sky-400 disabled:opacity-30 disabled:hover:border-neutral-600 disabled:hover:text-neutral-300"
+          >
+            +
+          </button>
+          <span>/ {maxStepIndex}</span>
         </div>
       </div>
     </div>
