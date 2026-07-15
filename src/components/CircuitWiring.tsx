@@ -107,7 +107,7 @@ export function CircuitWiring({
               {rows.length > 1 && (
                 <div
                   style={{ gridColumn: col, gridRow: `${minRow + 1} / span ${maxRow - minRow + 1}` }}
-                  className="z-10 mx-auto w-px self-stretch bg-neutral-400"
+                  className="pointer-events-none z-10 mx-auto w-px self-stretch bg-neutral-400"
                 />
               )}
               {step.targets.map((targetId, i) => {
@@ -119,12 +119,14 @@ export function CircuitWiring({
                     key={`${step.id}-${targetId}`}
                     type="button"
                     onClick={() => onRemoveStep(step.id)}
-                    title={`${step.gateId} — click to remove`}
+                    disabled={!!armedGateId}
+                    title={armedGateId ? step.gateId : `${step.gateId} — click to remove`}
                     style={{ gridColumn: col, gridRow: r + 1 }}
                     className={
-                      marker.boxed
-                        ? 'z-10 mx-auto flex h-8 w-10 items-center justify-center border border-neutral-500 bg-neutral-800 font-mono text-xs text-neutral-100 hover:border-red-400'
-                        : 'z-10 mx-auto flex h-8 w-10 items-center justify-center font-mono text-base text-neutral-100 hover:text-red-400'
+                      (marker.boxed
+                        ? 'z-10 mx-auto flex h-8 w-10 items-center justify-center border border-neutral-500 bg-neutral-800 font-mono text-xs text-neutral-100'
+                        : 'z-10 mx-auto flex h-8 w-10 items-center justify-center font-mono text-base text-neutral-100') +
+                      (armedGateId ? ' pointer-events-none' : ' hover:border-red-400 hover:text-red-400')
                     }
                   >
                     {marker.label}
