@@ -2,6 +2,9 @@ import { create } from 'zustand'
 import { GATE_DEFINITIONS, type GateId } from '../quantum/gates'
 import { applyGate, createState, type StateVector } from '../quantum/stateVector'
 
+/** Beyond this, basis labels (2^n rows) get unwieldy and simulation cost grows exponentially. */
+export const MAX_QUBITS = 10
+
 export interface Qubit {
   id: string
   label: string
@@ -84,6 +87,7 @@ export const useCircuitStore = create<CircuitStore>((set) => ({
 
   addQubit: () =>
     set((s) => {
+      if (s.qubits.length >= MAX_QUBITS) return s
       const qubits = [...s.qubits, createDefaultQubit(s.qubits)]
       return { qubits, ...recompute(qubits, s.steps, s.currentStepIndex) }
     }),

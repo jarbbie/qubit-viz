@@ -12,7 +12,7 @@ export function ProbabilitiesPanel() {
       <ul className="flex flex-col gap-1">
         {probs.map((p, i) => (
           <li key={i} className="flex items-center gap-2 font-mono text-xs text-neutral-300">
-            <span className="w-12 shrink-0">|{basisLabel(i, state!.numQubits)}⟩</span>
+            <span className="shrink-0">|{basisLabel(i, state!.numQubits)}⟩</span>
             <div className="h-2 flex-1 bg-neutral-800">
               <div className="h-2 bg-sky-500" style={{ width: `${p * 100}%` }} />
             </div>

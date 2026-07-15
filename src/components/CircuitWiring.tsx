@@ -1,6 +1,6 @@
 import { Fragment, type CSSProperties } from 'react'
 import type { GateId } from '../quantum/gates'
-import type { CircuitStep, Qubit } from '../store/circuitStore'
+import { MAX_QUBITS, type CircuitStep, type Qubit } from '../store/circuitStore'
 
 interface CircuitWiringProps {
   qubits: Qubit[]
@@ -163,7 +163,9 @@ export function CircuitWiring({
       <button
         type="button"
         onClick={onAddQubit}
-        className="mt-3 border border-neutral-700 px-2 py-1 font-mono text-xs text-neutral-300 hover:border-neutral-500"
+        disabled={qubits.length >= MAX_QUBITS}
+        title={qubits.length >= MAX_QUBITS ? `Maximum of ${MAX_QUBITS} qubits` : undefined}
+        className="mt-3 border border-neutral-700 px-2 py-1 font-mono text-xs text-neutral-300 hover:border-neutral-500 disabled:cursor-not-allowed disabled:border-neutral-800 disabled:text-neutral-600 disabled:hover:border-neutral-800"
       >
         + Add qubit
       </button>
