@@ -113,6 +113,10 @@ export type GateId = 'I' | 'X' | 'Y' | 'Z' | 'H' | 'S' | 'T' | 'RX' | 'RY' | 'RZ
 
 export interface GateDefinition {
   id: GateId
+  /** Short display name, e.g. "Hadamard", shown in the gate palette tooltip. */
+  name: string
+  /** One-sentence, user-facing explanation of what the gate does. */
+  description: string
   arity: number
   /** Names of the numeric parameters `matrix` expects, e.g. ['theta'] for rotation gates. */
   paramNames: readonly string[]
@@ -121,18 +125,116 @@ export interface GateDefinition {
 
 /** Single source of truth for turning a placed gate (id + params) into a concrete matrix. */
 export const GATE_DEFINITIONS: Record<GateId, GateDefinition> = {
-  I: { id: 'I', arity: 1, paramNames: [], matrix: () => I },
-  X: { id: 'X', arity: 1, paramNames: [], matrix: () => X },
-  Y: { id: 'Y', arity: 1, paramNames: [], matrix: () => Y },
-  Z: { id: 'Z', arity: 1, paramNames: [], matrix: () => Z },
-  H: { id: 'H', arity: 1, paramNames: [], matrix: () => H },
-  S: { id: 'S', arity: 1, paramNames: [], matrix: () => S },
-  T: { id: 'T', arity: 1, paramNames: [], matrix: () => T },
-  RX: { id: 'RX', arity: 1, paramNames: ['theta'], matrix: (p) => rx(p?.theta ?? 0) },
-  RY: { id: 'RY', arity: 1, paramNames: ['theta'], matrix: (p) => ry(p?.theta ?? 0) },
-  RZ: { id: 'RZ', arity: 1, paramNames: ['theta'], matrix: (p) => rz(p?.theta ?? 0) },
-  CNOT: { id: 'CNOT', arity: 2, paramNames: [], matrix: () => CNOT },
-  SWAP: { id: 'SWAP', arity: 2, paramNames: [], matrix: () => SWAP },
-  CZ: { id: 'CZ', arity: 2, paramNames: [], matrix: () => CZ },
-  CCX: { id: 'CCX', arity: 3, paramNames: [], matrix: () => CCX },
+  I: {
+    id: 'I',
+    name: 'Identity',
+    description: 'Leaves the qubit unchanged.',
+    arity: 1,
+    paramNames: [],
+    matrix: () => I,
+  },
+  X: {
+    id: 'X',
+    name: 'Pauli-X',
+    description: 'Flips |0⟩ and |1⟩, like a classical NOT.',
+    arity: 1,
+    paramNames: [],
+    matrix: () => X,
+  },
+  Y: {
+    id: 'Y',
+    name: 'Pauli-Y',
+    description: 'Flips |0⟩ and |1⟩ with an added phase twist.',
+    arity: 1,
+    paramNames: [],
+    matrix: () => Y,
+  },
+  Z: {
+    id: 'Z',
+    name: 'Pauli-Z',
+    description: 'Flips the phase of |1⟩, leaving |0⟩ unchanged.',
+    arity: 1,
+    paramNames: [],
+    matrix: () => Z,
+  },
+  H: {
+    id: 'H',
+    name: 'Hadamard',
+    description: 'Creates an equal superposition of |0⟩ and |1⟩.',
+    arity: 1,
+    paramNames: [],
+    matrix: () => H,
+  },
+  S: {
+    id: 'S',
+    name: 'S (Phase)',
+    description: 'Adds a 90° phase to |1⟩.',
+    arity: 1,
+    paramNames: [],
+    matrix: () => S,
+  },
+  T: {
+    id: 'T',
+    name: 'T (π/8)',
+    description: 'Adds a 45° phase to |1⟩.',
+    arity: 1,
+    paramNames: [],
+    matrix: () => T,
+  },
+  RX: {
+    id: 'RX',
+    name: 'X Rotation',
+    description: 'Rotates the qubit around the X axis by angle θ.',
+    arity: 1,
+    paramNames: ['theta'],
+    matrix: (p) => rx(p?.theta ?? 0),
+  },
+  RY: {
+    id: 'RY',
+    name: 'Y Rotation',
+    description: 'Rotates the qubit around the Y axis by angle θ.',
+    arity: 1,
+    paramNames: ['theta'],
+    matrix: (p) => ry(p?.theta ?? 0),
+  },
+  RZ: {
+    id: 'RZ',
+    name: 'Z Rotation',
+    description: 'Rotates the qubit around the Z axis by angle θ.',
+    arity: 1,
+    paramNames: ['theta'],
+    matrix: (p) => rz(p?.theta ?? 0),
+  },
+  CNOT: {
+    id: 'CNOT',
+    name: 'CNOT',
+    description: 'Flips the target qubit if the control qubit is |1⟩.',
+    arity: 2,
+    paramNames: [],
+    matrix: () => CNOT,
+  },
+  SWAP: {
+    id: 'SWAP',
+    name: 'SWAP',
+    description: 'Swaps the states of two qubits.',
+    arity: 2,
+    paramNames: [],
+    matrix: () => SWAP,
+  },
+  CZ: {
+    id: 'CZ',
+    name: 'CZ',
+    description: 'Flips the phase of the target if both qubits are |1⟩.',
+    arity: 2,
+    paramNames: [],
+    matrix: () => CZ,
+  },
+  CCX: {
+    id: 'CCX',
+    name: 'Toffoli (CCX)',
+    description: 'Flips the target if both control qubits are |1⟩.',
+    arity: 3,
+    paramNames: [],
+    matrix: () => CCX,
+  },
 }
