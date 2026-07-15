@@ -76,13 +76,24 @@ export function CircuitWiring({
           </div>
         ))}
 
-        {qubits.map((qubit, row) => (
-          <div
-            key={`wire-${qubit.id}`}
-            style={{ gridRow: row + 1, gridColumn: '2 / -1', alignSelf: 'center' }}
-            className="h-px bg-neutral-600"
-          />
-        ))}
+        {qubits.map((qubit, row) => {
+          const isPending = pendingTargets.includes(qubit.id)
+          return (
+            <button
+              key={`wire-${qubit.id}`}
+              type="button"
+              disabled={!armedGateId}
+              onClick={() => onWireClick(qubit.id)}
+              title={armedGateId ? `Append ${armedGateId} to q[${row}]` : undefined}
+              style={{ gridColumn: '2 / -1', gridRow: row + 1 }}
+              className={`relative h-full w-full ${armedGateId ? 'cursor-pointer hover:bg-sky-500/10' : ''}`}
+            >
+              <span
+                className={`absolute inset-x-0 top-1/2 h-px -translate-y-1/2 ${isPending ? 'bg-sky-400' : 'bg-neutral-600'}`}
+              />
+            </button>
+          )
+        })}
 
         {steps.map((step, stepIndex) => {
           const col = stepIndex + 2
