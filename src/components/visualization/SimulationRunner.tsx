@@ -4,7 +4,7 @@ import { useCircuitStore } from '../../store/circuitStore'
 const STEP_DURATION_MS = 700
 // Beyond this many steps, numbers would start wrapping onto a second line,
 // so switch to plain tick marks instead of collapsing the layout.
-const MAX_NUMBERED_TICKS = 17
+const MAX_NUMBERED_TICKS = 40
 
 export function SimulationRunner() {
   const historyLength = useCircuitStore((s) => s.history.length)
