@@ -1,5 +1,5 @@
 import { Canvas } from '@react-three/fiber'
-import { Billboard, Line, OrbitControls, Text } from '@react-three/drei'
+import { Html, Line, OrbitControls } from '@react-three/drei'
 import type { BlochVector } from '../../quantum/blochVector'
 import { circlePoints, toThreeVector } from './blochCoordinates'
 
@@ -18,13 +18,14 @@ const AXIS_LABELS: { position: [number, number, number]; text: string }[] = [
   { position: [0, 0, 1.42], text: 'X' },
 ]
 
+// Rendered as real DOM text (not a 3D SDF mesh) so labels use the browser's
+// built-in font — no external font asset to fetch, so there's nothing to
+// fail if the network is unavailable.
 function AxisLabel({ position, text }: { position: [number, number, number]; text: string }) {
   return (
-    <Billboard position={position}>
-      <Text fontSize={0.16} color="#9ca3af" anchorX="center" anchorY="middle">
-        {text}
-      </Text>
-    </Billboard>
+    <Html position={position} center style={{ pointerEvents: 'none' }}>
+      <span className="font-mono text-[10px] whitespace-nowrap text-neutral-400">{text}</span>
+    </Html>
   )
 }
 
