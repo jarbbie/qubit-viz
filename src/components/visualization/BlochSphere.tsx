@@ -1,5 +1,5 @@
 import { Canvas } from '@react-three/fiber'
-import { Line, OrbitControls } from '@react-three/drei'
+import { Billboard, Line, OrbitControls, Text } from '@react-three/drei'
 import type { BlochVector } from '../../quantum/blochVector'
 import { circlePoints, toThreeVector } from './blochCoordinates'
 
@@ -7,6 +7,26 @@ import { circlePoints, toThreeVector } from './blochCoordinates'
 const EQUATOR = circlePoints('xz', 64, 1.01)
 const MERIDIAN_A = circlePoints('xy', 64, 1.01)
 const MERIDIAN_B = circlePoints('yz', 64, 1.01)
+
+// Quantum-axis labels at the tip of each axis line, so orientation stays
+// readable after dragging. Positions follow toThreeVector's mapping
+// (quantum z -> three Y, quantum y -> three X, quantum x -> three Z).
+const AXIS_LABELS: { position: [number, number, number]; text: string }[] = [
+  { position: [0, 1.42, 0], text: '|0⟩' },
+  { position: [0, -1.42, 0], text: '|1⟩' },
+  { position: [1.42, 0, 0], text: 'Y' },
+  { position: [0, 0, 1.42], text: 'X' },
+]
+
+function AxisLabel({ position, text }: { position: [number, number, number]; text: string }) {
+  return (
+    <Billboard position={position}>
+      <Text fontSize={0.16} color="#9ca3af" anchorX="center" anchorY="middle">
+        {text}
+      </Text>
+    </Billboard>
+  )
+}
 
 interface BlochSphereProps {
   vector: BlochVector
@@ -21,7 +41,7 @@ export function BlochSphere({ vector, label, size = 160 }: BlochSphereProps) {
     <div className="flex flex-col items-center gap-1">
       <Canvas
         style={{ width: size, height: size }}
-        camera={{ position: [2.64, 2.15, 2.97], fov: 35 }}
+        camera={{ position: [3.25, 2.64, 3.65], fov: 35 }}
         frameloop="demand"
       >
         <ambientLight intensity={1} />
@@ -35,6 +55,9 @@ export function BlochSphere({ vector, label, size = 160 }: BlochSphereProps) {
         <Line points={[[-1.3, 0, 0], [1.3, 0, 0]]} color="#6b7280" />
         <Line points={[[0, -1.3, 0], [0, 1.3, 0]]} color="#6b7280" />
         <Line points={[[0, 0, -1.3], [0, 0, 1.3]]} color="#6b7280" />
+        {AXIS_LABELS.map((a) => (
+          <AxisLabel key={a.text} position={a.position} text={a.text} />
+        ))}
         <Line points={[[0, 0, 0], tip]} color="#facc15" lineWidth={2} />
         <mesh position={tip}>
           <sphereGeometry args={[0.05, 8, 8]} />
