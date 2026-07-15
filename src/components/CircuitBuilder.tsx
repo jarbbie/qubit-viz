@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { GATE_DEFINITIONS, type GateId } from '../quantum/gates'
 import { useCircuitStore } from '../store/circuitStore'
 import { CircuitWiring } from './CircuitWiring'
@@ -23,7 +23,19 @@ export function CircuitBuilder() {
   const [pendingTargets, setPendingTargets] = useState<string[]>([])
   const [error, setError] = useState<string | null>(null)
 
+  // A gate armed before qubits were removed can outlive the qubits it needs
+  // to complete placement, otherwise leaving it stuck armed with no way to
+  // finish (or restart) placement.
+  useEffect(() => {
+    if (armedGateId && GATE_DEFINITIONS[armedGateId].arity > qubits.length) {
+      setArmedGateId(null)
+      setParams({})
+      setPendingTargets([])
+    }
+  }, [armedGateId, qubits.length])
+
   function selectGate(gateId: GateId) {
+    if (GATE_DEFINITIONS[gateId].arity > qubits.length) return
     setError(null)
     setPendingTargets([])
     if (armedGateId === gateId) {
@@ -60,7 +72,7 @@ export function CircuitBuilder() {
 
   return (
     <div className="flex flex-col gap-4">
-      <GatePalette armedGateId={armedGateId} onSelectGate={selectGate} />
+      <GatePalette armedGateId={armedGateId} qubitCount={qubits.length} onSelectGate={selectGate} />
       <CircuitWiring
         qubits={qubits}
         steps={steps}

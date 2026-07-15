@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { add, complex, conj, equalsApprox, mul, ZERO } from './complex'
-import { CNOT, GATE_DEFINITIONS, type Gate, H, I, rx, ry, rz, S, SWAP, T, X, Y, Z } from './gates'
+import { CCX, CNOT, CZ, GATE_DEFINITIONS, type Gate, H, I, rx, ry, rz, S, SWAP, T, X, Y, Z } from './gates'
 
 /** G is unitary iff G * G^dagger === identity. */
 function isUnitary(gate: Gate): boolean {
@@ -39,6 +39,8 @@ describe('gates', () => {
     ['T', T],
     ['CNOT', CNOT],
     ['SWAP', SWAP],
+    ['CZ', CZ],
+    ['CCX', CCX],
   ])('%s is unitary', (_name, gate) => {
     expect(isUnitary(gate)).toBe(true)
   })
@@ -56,6 +58,19 @@ describe('gates', () => {
   it('SWAP exchanges the two qubits', () => {
     expect(SWAP[1]).toEqual([complex(0), complex(0), complex(1), complex(0)]) // |01> -> |10>
     expect(SWAP[2]).toEqual([complex(0), complex(1), complex(0), complex(0)]) // |10> -> |01>
+  })
+
+  it('CZ leaves every basis state unchanged except |11>, which gets a -1 phase', () => {
+    for (let i = 0; i < 3; i++) {
+      expect(CZ[i][i]).toEqual(complex(1))
+    }
+    expect(CZ[3][3]).toEqual(complex(-1))
+  })
+
+  it('CCX only flips the target when both controls are 1', () => {
+    expect(CCX[5]).toEqual(Array.from({ length: 8 }, (_, j) => complex(j === 5 ? 1 : 0))) // |101> unchanged
+    expect(CCX[7]).toEqual(Array.from({ length: 8 }, (_, j) => complex(j === 6 ? 1 : 0))) // |111> -> |110>
+    expect(CCX[6]).toEqual(Array.from({ length: 8 }, (_, j) => complex(j === 7 ? 1 : 0))) // |110> -> |111>
   })
 })
 

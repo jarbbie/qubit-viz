@@ -59,6 +59,31 @@ export const SWAP: Gate = [
   [c(0), c(0), c(0), c(1)],
 ]
 
+/** Control is the first target qubit, target is the second (same basis order as CNOT). */
+export const CZ: Gate = [
+  [c(1), c(0), c(0), c(0)],
+  [c(0), c(1), c(0), c(0)],
+  [c(0), c(0), c(1), c(0)],
+  [c(0), c(0), c(0), c(-1)],
+]
+
+/** Permutation matrix: basis state j maps to basis state perm(j). */
+function permutationGate(size: number, perm: (j: number) => number): Gate {
+  return Array.from({ length: size }, (_, row) =>
+    Array.from({ length: size }, (_, col) => c(row === perm(col) ? 1 : 0)),
+  )
+}
+
+/**
+ * Toffoli / CCX. Controls are the first two target qubits, target (flipped
+ * only when both controls are 1) is the third. Basis order |c1,c2,t>.
+ */
+export const CCX: Gate = permutationGate(8, (j) => {
+  const c1 = (j >> 2) & 1
+  const c2 = (j >> 1) & 1
+  return c1 === 1 && c2 === 1 ? j ^ 1 : j
+})
+
 export function rx(theta: number): Gate {
   const cos = Math.cos(theta / 2)
   const sin = Math.sin(theta / 2)
@@ -84,7 +109,7 @@ export function rz(theta: number): Gate {
   ]
 }
 
-export type GateId = 'I' | 'X' | 'Y' | 'Z' | 'H' | 'S' | 'T' | 'RX' | 'RY' | 'RZ' | 'CNOT' | 'SWAP'
+export type GateId = 'I' | 'X' | 'Y' | 'Z' | 'H' | 'S' | 'T' | 'RX' | 'RY' | 'RZ' | 'CNOT' | 'SWAP' | 'CZ' | 'CCX'
 
 export interface GateDefinition {
   id: GateId
@@ -108,4 +133,6 @@ export const GATE_DEFINITIONS: Record<GateId, GateDefinition> = {
   RZ: { id: 'RZ', arity: 1, paramNames: ['theta'], matrix: (p) => rz(p?.theta ?? 0) },
   CNOT: { id: 'CNOT', arity: 2, paramNames: [], matrix: () => CNOT },
   SWAP: { id: 'SWAP', arity: 2, paramNames: [], matrix: () => SWAP },
+  CZ: { id: 'CZ', arity: 2, paramNames: [], matrix: () => CZ },
+  CCX: { id: 'CCX', arity: 3, paramNames: [], matrix: () => CCX },
 }

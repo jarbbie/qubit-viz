@@ -18,8 +18,10 @@ const COLUMN_WIDTH = 56
 const ROW_HEIGHT = 44
 
 /** Marker glyph for a gate at a given position within its target list (control vs. target, etc.). */
-function gateMarker(gateId: GateId, targetIndex: number): { label: string; boxed: boolean } {
+function gateMarker(gateId: GateId, targetIndex: number, targetCount: number): { label: string; boxed: boolean } {
   if (gateId === 'CNOT') return targetIndex === 0 ? { label: '●', boxed: false } : { label: '⊕', boxed: true }
+  if (gateId === 'CCX') return targetIndex < targetCount - 1 ? { label: '●', boxed: false } : { label: '⊕', boxed: true }
+  if (gateId === 'CZ') return { label: '●', boxed: false }
   if (gateId === 'SWAP') return { label: '✕', boxed: false }
   return { label: gateId, boxed: true }
 }
@@ -100,7 +102,7 @@ export function CircuitWiring({
               {step.targets.map((targetId, i) => {
                 const r = rowOf(targetId)
                 if (r < 0) return null
-                const marker = gateMarker(step.gateId, i)
+                const marker = gateMarker(step.gateId, i, step.targets.length)
                 return (
                   <button
                     key={`${step.id}-${targetId}`}
