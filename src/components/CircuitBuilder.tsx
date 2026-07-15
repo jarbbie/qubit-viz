@@ -72,12 +72,6 @@ export function CircuitBuilder() {
 
   return (
     <div className="flex flex-col gap-4">
-      <GatePalette armedGateId={armedGateId} qubitCount={qubits.length} onSelectGate={selectGate} />
-      <GateParameterPanel
-        armedGateId={armedGateId}
-        params={params}
-        onParamChange={(name, value) => setParams((p) => ({ ...p, [name]: value }))}
-      />
       <CircuitWiring
         qubits={qubits}
         steps={steps}
@@ -90,6 +84,12 @@ export function CircuitBuilder() {
         onAddQubit={addQubit}
       />
       {error && <p className="font-mono text-xs text-red-400">{error}</p>}
+      <GatePalette armedGateId={armedGateId} qubitCount={qubits.length} onSelectGate={selectGate} />
+      <GateParameterPanel
+        armedGateId={armedGateId}
+        params={params}
+        onParamChange={(name, value) => setParams((p) => ({ ...p, [name]: value }))}
+      />
     </div>
   )
 }
