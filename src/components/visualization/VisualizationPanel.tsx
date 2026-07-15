@@ -5,26 +5,23 @@ import { BlochSphere } from './BlochSphere'
 
 const MIN_SPHERE_SIZE = 64
 const MAX_SPHERE_SIZE = 360
-const SPHERE_GAP = 24 // matches the sphere row's gap-6
+const SPHERE_GAP = 24 // matches the sphere grid's gap-6
+const MAX_COLUMNS = 5
 
 /**
- * Picks the largest square size that packs `count` spheres (in some
- * row/column arrangement) into the available content box, mirroring how
- * `flex-wrap` will actually lay them out. This only shrinks spheres when a
- * new row or column is genuinely needed to fit them, not on every qubit
- * added — most of the panel's whitespace gets used before anything shrinks.
+ * Picks the largest square size that fits `count` spheres into the
+ * available content box using at most MAX_COLUMNS per row (wrapping to
+ * further rows beyond that), mirroring the grid layout below.
  */
 function sphereSizeFor(contentWidth: number, contentHeight: number, count: number): number {
   if (count <= 0 || contentWidth <= 0 || contentHeight <= 0) return MAX_SPHERE_SIZE
 
-  let best = MIN_SPHERE_SIZE
-  for (let cols = 1; cols <= count; cols++) {
-    const rows = Math.ceil(count / cols)
-    const sizeByWidth = (contentWidth - (cols - 1) * SPHERE_GAP) / cols
-    const sizeByHeight = (contentHeight - (rows - 1) * SPHERE_GAP) / rows
-    best = Math.max(best, Math.min(sizeByWidth, sizeByHeight))
-  }
-  return Math.max(MIN_SPHERE_SIZE, Math.min(MAX_SPHERE_SIZE, best))
+  const cols = Math.min(count, MAX_COLUMNS)
+  const rows = Math.ceil(count / cols)
+  const sizeByWidth = (contentWidth - (cols - 1) * SPHERE_GAP) / cols
+  const sizeByHeight = (contentHeight - (rows - 1) * SPHERE_GAP) / rows
+
+  return Math.max(MIN_SPHERE_SIZE, Math.min(MAX_SPHERE_SIZE, Math.min(sizeByWidth, sizeByHeight)))
 }
 
 interface VisualizationPanelProps {
@@ -58,7 +55,10 @@ export function VisualizationPanel({ className }: VisualizationPanelProps) {
         {!state || enabledQubits.length === 0 ? (
           <p className="font-mono text-xs text-neutral-500">No enabled qubits.</p>
         ) : (
-          <div className="flex flex-wrap items-start gap-6">
+          <div
+            className="grid items-start gap-6"
+            style={{ gridTemplateColumns: `repeat(${Math.min(enabledQubits.length, MAX_COLUMNS)}, max-content)` }}
+          >
             {/*
               computeHistory (circuitStore.ts) rebuilds `state` from the current
               `qubits` array on every mutation, so state.numQubits ===
