@@ -14,7 +14,7 @@ export function CircuitVisualizerPage() {
         </div>
         <div className="flex min-w-0 flex-1 flex-col gap-4">
           <VisualizationPanel className="min-h-[420px] flex-1" />
-          <div className="grid grid-cols-[2fr_3fr] gap-4">
+          <div className="grid grid-cols-[2fr_3fr] items-start gap-4">
             <SimulationRunner />
             <div className="grid grid-cols-2 divide-x divide-neutral-700 border border-neutral-700">
               <StatePanel />

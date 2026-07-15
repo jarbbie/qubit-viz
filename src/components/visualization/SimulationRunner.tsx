@@ -32,7 +32,7 @@ export function SimulationRunner() {
   return (
     <div className="border border-neutral-700 p-4">
       <h2 className="mb-4 font-mono text-xs tracking-widest text-neutral-400 uppercase">Simulation runner</h2>
-      <div className="flex items-center gap-4">
+      <div className="flex items-start gap-4">
         <button
           type="button"
           onClick={handlePlayToggle}
@@ -41,7 +41,7 @@ export function SimulationRunner() {
         >
           {isPlaying ? '❚❚' : '▶'}
         </button>
-        <div className="relative flex-1 pb-4">
+        <div className="flex-1">
           <input
             type="range"
             min={0}
@@ -51,15 +51,9 @@ export function SimulationRunner() {
             disabled={!canPlay}
             className="w-full accent-sky-400"
           />
-          <div className="pointer-events-none absolute inset-x-0 top-4 font-mono text-[10px] text-neutral-500">
-            {Array.from({ length: historyLength }, (_, i) => i).map((i) => (
-              <span
-                key={i}
-                className="absolute -translate-x-1/2"
-                style={{ left: `${historyLength > 1 ? (i / (historyLength - 1)) * 100 : 0}%` }}
-              >
-                {i}
-              </span>
+          <div className="mt-1 flex flex-wrap justify-between gap-x-2 font-mono text-[10px] text-neutral-500">
+            {Array.from({ length: historyLength }, (_, i) => (
+              <span key={i}>{i}</span>
             ))}
           </div>
         </div>
