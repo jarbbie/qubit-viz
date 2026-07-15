@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { toThreeVector } from './blochCoordinates'
+import { circlePoints, toThreeVector } from './blochCoordinates'
 
 describe('toThreeVector', () => {
   it('maps quantum +z (|0>) to three +Y (vertical)', () => {
@@ -20,5 +20,25 @@ describe('toThreeVector', () => {
     const before = Math.sqrt(v.x ** 2 + v.y ** 2 + v.z ** 2)
     const after = Math.sqrt(tx ** 2 + ty ** 2 + tz ** 2)
     expect(after).toBeCloseTo(before)
+  })
+})
+
+describe('circlePoints', () => {
+  it('returns a closed loop', () => {
+    const pts = circlePoints('xz', 8)
+    const [first, last] = [pts[0], pts[pts.length - 1]]
+    first.forEach((coord, i) => expect(coord).toBeCloseTo(last[i]))
+  })
+
+  it('lies in the requested plane', () => {
+    for (const p of circlePoints('xy', 16)) expect(p[2]).toBeCloseTo(0)
+    for (const p of circlePoints('yz', 16)) expect(p[0]).toBeCloseTo(0)
+    for (const p of circlePoints('xz', 16)) expect(p[1]).toBeCloseTo(0)
+  })
+
+  it('lies at the given radius from the origin', () => {
+    for (const p of circlePoints('xy', 16, 1.5)) {
+      expect(Math.sqrt(p[0] ** 2 + p[1] ** 2 + p[2] ** 2)).toBeCloseTo(1.5)
+    }
   })
 })
