@@ -15,6 +15,7 @@ export function CircuitVisualizerPage() {
   const { c } = routeApi.useSearch()
   const navigate = useNavigate({ from: '/' })
   const loadCircuit = useCircuitStore((s) => s.loadCircuit)
+  const reset = useCircuitStore((s) => s.reset)
   const qubits = useCircuitStore((s) => s.qubits)
   const steps = useCircuitStore((s) => s.steps)
 
@@ -28,6 +29,11 @@ export function CircuitVisualizerPage() {
     const decoded = decodeCircuit(c)
     if (decoded) loadCircuit(decoded)
   }, [c, loadCircuit])
+
+  function handleReset() {
+    reset()
+    navigate({ search: {}, replace: true })
+  }
 
   async function handleShare() {
     const encoded = encodeCircuit(qubits, steps)
@@ -47,7 +53,11 @@ export function CircuitVisualizerPage() {
   return (
     <div className="min-h-screen bg-neutral-950 p-6 text-white">
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="font-mono text-2xl font-bold">Qubit Visualizer</h1>
+        <h1 className="font-mono text-2xl font-bold">
+          <button type="button" onClick={handleReset} title="Start a new circuit" className="hover:text-neutral-300">
+            Qubit Visualizer
+          </button>
+        </h1>
         <button
           type="button"
           onClick={handleShare}
