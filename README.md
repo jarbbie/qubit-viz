@@ -21,6 +21,9 @@ matrix.*
 - **Step-by-step simulation runner** — scrub, play/pause, or jump directly
   to any step in the circuit's history
 - **State vector and probability breakdown** for the current step
+- **Share a circuit via URL** — click Share to copy a link that encodes the
+  whole circuit; opening it reconstructs it exactly, no account or server
+  needed
 - Click anywhere on a qubit's wire to append the armed gate — no
   scrolling to find a tiny target on long circuits
 

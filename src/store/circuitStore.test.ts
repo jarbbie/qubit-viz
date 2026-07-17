@@ -129,6 +129,59 @@ describe('gate placement', () => {
   })
 })
 
+describe('loadCircuit', () => {
+  it('atomically replaces qubits/steps and lands the scrub position at the end', () => {
+    useCircuitStore.getState().addGate('X', [qubitIds()[0]]) // pre-existing circuit, should be fully replaced
+
+    useCircuitStore.getState().loadCircuit({
+      qubitCount: 2,
+      disabledIndices: [],
+      steps: [
+        { gateId: 'H', targets: [0] },
+        { gateId: 'CNOT', targets: [0, 1] },
+      ],
+    })
+
+    const s = useCircuitStore.getState()
+    expect(s.qubits).toHaveLength(2)
+    expect(s.steps).toHaveLength(2)
+    expect(s.steps.map((step) => step.gateId)).toEqual(['H', 'CNOT'])
+    expect(s.currentStepIndex).toBe(s.history.length - 1)
+    const probs = getProbabilities(selectCurrentState(s)!)
+    expect(probs[0b00]).toBeCloseTo(0.5)
+    expect(probs[0b11]).toBeCloseTo(0.5)
+  })
+
+  it('generates fresh qubit/step ids rather than reusing any prior session state', () => {
+    const before = new Set(qubitIds())
+    useCircuitStore.getState().loadCircuit({ qubitCount: 1, disabledIndices: [], steps: [] })
+    const after = useCircuitStore.getState().qubits[0].id
+    expect(before.has(after)).toBe(false)
+  })
+
+  it('remaps decoded target indices to the newly generated qubit ids', () => {
+    useCircuitStore.getState().loadCircuit({
+      qubitCount: 2,
+      disabledIndices: [],
+      steps: [{ gateId: 'CNOT', targets: [0, 1] }],
+    })
+    const s = useCircuitStore.getState()
+    expect(s.steps[0].targets).toEqual([s.qubits[0].id, s.qubits[1].id])
+  })
+
+  it('respects disabledIndices', () => {
+    useCircuitStore.getState().loadCircuit({ qubitCount: 2, disabledIndices: [1], steps: [] })
+    const s = useCircuitStore.getState()
+    expect(s.qubits[0].enabled).toBe(true)
+    expect(s.qubits[1].enabled).toBe(false)
+  })
+
+  it('clamps a decoded qubit count above MAX_QUBITS as defense in depth', () => {
+    useCircuitStore.getState().loadCircuit({ qubitCount: 999, disabledIndices: [], steps: [] })
+    expect(useCircuitStore.getState().qubits).toHaveLength(10)
+  })
+})
+
 describe('scrubbing', () => {
   it('setCurrentStepIndex clamps to the valid history range', () => {
     const [q0] = qubitIds()

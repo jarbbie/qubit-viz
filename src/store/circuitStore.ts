@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { GATE_DEFINITIONS, type GateId } from '../quantum/gates'
 import { applyGate, createState, type StateVector } from '../quantum/stateVector'
+import type { DecodedCircuit } from './circuitUrlCodec'
 
 /** Beyond this, basis labels (2^n rows) get unwieldy and simulation cost grows exponentially. */
 export const MAX_QUBITS = 10
@@ -34,6 +35,8 @@ export interface CircuitStore {
   addGate: (gateId: GateId, targets: string[], params?: Record<string, number>) => void
   removeGate: (stepId: string) => void
   clearCircuit: () => void
+  /** Atomically replaces the circuit with a decoded one (e.g. from a shared URL). */
+  loadCircuit: (decoded: DecodedCircuit) => void
 
   setCurrentStepIndex: (index: number) => void
   stepForward: () => void
@@ -131,6 +134,27 @@ export const useCircuitStore = create<CircuitStore>((set) => ({
     set((s) => {
       const steps: CircuitStep[] = []
       return { steps, ...recompute(s.qubits, steps, 0) }
+    }),
+
+  loadCircuit: (decoded) =>
+    set(() => {
+      const qubitCount = Math.min(Math.max(decoded.qubitCount, 1), MAX_QUBITS)
+      const disabled = new Set(decoded.disabledIndices)
+      const qubits: Qubit[] = Array.from({ length: qubitCount }, (_, i) => ({
+        id: crypto.randomUUID(),
+        label: `Q${i + 1}`,
+        enabled: !disabled.has(i),
+      }))
+      const steps: CircuitStep[] = decoded.steps
+        .filter((step) => step.targets.every((i) => i < qubitCount))
+        .map((step) => ({
+          id: crypto.randomUUID(),
+          gateId: step.gateId,
+          targets: step.targets.map((i) => qubits[i].id),
+          params: step.params,
+        }))
+      const history = computeHistory(qubits, steps)
+      return { qubits, steps, history, currentStepIndex: Math.max(history.length - 1, 0) }
     }),
 
   setCurrentStepIndex: (index) =>

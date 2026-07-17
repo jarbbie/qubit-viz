@@ -10,7 +10,7 @@ states in real time on Bloch spheres.
 - Three.js + @react-three/fiber + @react-three/drei (Bloch sphere rendering)
 - Zustand (circuit/gate state)
 - No backend — all simulation runs client-side (state vector math is cheap)
-- Circuits are shareable via URL-encoded state (planned), not a database
+- Circuits are shareable via URL-encoded state (`src/store/circuitUrlCodec.ts`), not a database
 
 ## Core concepts
 - Each qubit is a 2-element complex vector; gates are 2x2 (or 4x4 for
