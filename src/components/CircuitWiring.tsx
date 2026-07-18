@@ -40,6 +40,18 @@ export function CircuitWiring({
   const rowOf = (qubitId: string) => qubits.findIndex((q) => q.id === qubitId)
   const appendCol = steps.length + 2 // col 1 = header, cols 2..steps.length+1 = placed gates
 
+  // computeHistory (circuitStore.ts) assigns bit positions by index among
+  // *enabled* qubits only, so a disabled qubit earlier in the list shifts
+  // every enabled qubit after it — the row's array index and its simulated
+  // bit position only coincide when nothing before it is disabled. Label by
+  // the true bit position instead of the row so it never lies about which
+  // ket digit a qubit corresponds to.
+  const bitPositionOf = new Map(qubits.filter((q) => q.enabled).map((q, i) => [q.id, i]))
+  const qubitLabel = (qubit: Qubit) => {
+    const bitPosition = bitPositionOf.get(qubit.id)
+    return bitPosition === undefined ? 'q[–]' : `q[${bitPosition}]`
+  }
+
   const gridStyle: CSSProperties = {
     gridTemplateColumns: `max-content repeat(${steps.length + 1}, ${COLUMN_WIDTH}px)`,
     gridTemplateRows: `repeat(${qubits.length}, ${ROW_HEIGHT}px)`,
@@ -72,7 +84,7 @@ export function CircuitWiring({
             >
               ●
             </button>
-            <span>q[{row}]</span>
+            <span>{qubitLabel(qubit)}</span>
           </div>
         ))}
 
@@ -84,7 +96,7 @@ export function CircuitWiring({
               type="button"
               disabled={!armedGateId}
               onClick={() => onWireClick(qubit.id)}
-              title={armedGateId ? `Append ${armedGateId} to q[${row}]` : undefined}
+              title={armedGateId ? `Append ${armedGateId} to ${qubitLabel(qubit)}` : undefined}
               style={{ gridColumn: '2 / -1', gridRow: row + 1 }}
               className={`relative h-full w-full ${armedGateId ? 'cursor-pointer hover:bg-sky-500/10' : ''}`}
             >
