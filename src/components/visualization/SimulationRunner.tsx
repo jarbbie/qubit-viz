@@ -89,6 +89,7 @@ export function SimulationRunner() {
               const parsed = Number(e.target.value)
               if (!Number.isNaN(parsed)) goToStep(Math.round(parsed))
             }}
+            onFocus={(e) => e.target.select()}
             className="w-14 appearance-none border border-neutral-600 bg-neutral-900 px-1 py-1 text-center text-neutral-100 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
           />
           <button

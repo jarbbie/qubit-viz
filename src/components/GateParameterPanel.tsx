@@ -42,6 +42,7 @@ export function GateParameterPanel({ armedGateId, params, onParamChange }: GateP
                   step={PARAM_STEP}
                   value={value}
                   onChange={(e) => onParamChange(name, Number(e.target.value))}
+                  onFocus={(e) => e.target.select()}
                   className="w-20 appearance-none border border-neutral-600 bg-neutral-900 px-2 py-1 text-right text-neutral-100 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                 />
                 <button
