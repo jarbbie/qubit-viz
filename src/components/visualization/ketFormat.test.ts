@@ -2,13 +2,32 @@ import { describe, expect, it } from 'vitest'
 import { complex } from '../../quantum/complex'
 import { CNOT, H, X } from '../../quantum/gates'
 import { applyGate, createState } from '../../quantum/stateVector'
-import { basisLabel, formatComplex, formatStateVector } from './ketFormat'
+import { basisLabel, bitReverse, formatComplex, formatStateVector } from './ketFormat'
 
 describe('basisLabel', () => {
-  it('zero-pads to the qubit count', () => {
+  it('zero-pads a display index to the qubit count', () => {
     expect(basisLabel(0, 2)).toBe('00')
     expect(basisLabel(2, 2)).toBe('10')
     expect(basisLabel(3, 3)).toBe('011')
+  })
+})
+
+describe('bitReverse', () => {
+  it('reverses the low n bits', () => {
+    expect(bitReverse(0b10, 2)).toBe(0b01)
+    expect(bitReverse(0b001, 3)).toBe(0b100)
+    expect(bitReverse(0b011, 3)).toBe(0b110)
+  })
+
+  it('is its own inverse', () => {
+    for (let v = 0; v < 8; v++) {
+      expect(bitReverse(bitReverse(v, 3), 3)).toBe(v)
+    }
+  })
+
+  it('is a no-op for a single bit', () => {
+    expect(bitReverse(0, 1)).toBe(0)
+    expect(bitReverse(1, 1)).toBe(1)
   })
 })
 
@@ -70,5 +89,14 @@ describe('formatStateVector', () => {
     const state = createState(1)
     state.amplitudes[0] = complex(0, 0)
     expect(formatStateVector(state)).toBe('0')
+  })
+
+  it('writes qubit 0 leftmost, not the raw basis-index bit order', () => {
+    // X on qubit 1 only (qubit 0 untouched): q0=0, q1=1 -> "01" in the
+    // qubit-0-leftmost convention. The Bell-state test above is a
+    // palindrome (00/11) and wouldn't catch a bit-reversal regression;
+    // this asymmetric case would.
+    const state = applyGate(createState(2), X, [1])
+    expect(formatStateVector(state)).toBe('1|01⟩')
   })
 })

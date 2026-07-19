@@ -3,9 +3,30 @@ import type { StateVector } from '../../quantum/stateVector'
 
 const DEFAULT_EPSILON = 1e-6
 
-/** e.g. index=2, numQubits=2 -> "10" (qubit 0 = LSB, rendered MSB..LSB to match |q_{n-1}...q_0>). */
-export function basisLabel(basisIndex: number, numQubits: number): string {
-  return basisIndex.toString(2).padStart(numQubits, '0')
+/**
+ * Formats a *display* index (not a raw basis-state array index — see
+ * `bitReverse`) as a binary string with qubit 0 written leftmost, e.g.
+ * displayIndex=1, numQubits=2 -> "01" (q0=0, q1=1). This matches the
+ * left-to-right qubit order used elsewhere in the UI (Circuit rows top to
+ * bottom, Bloch spheres left to right), rather than the physics-notation
+ * convention of writing the most-significant qubit first.
+ */
+export function basisLabel(displayIndex: number, numQubits: number): string {
+  return displayIndex.toString(2).padStart(numQubits, '0')
+}
+
+/**
+ * Reverses the low `numBits` bits of `value`. The state vector's basis
+ * index has qubit 0 as the least-significant bit (see stateVector.ts), the
+ * opposite of `basisLabel`'s qubit-0-leftmost display order — this
+ * converts between the two (it's its own inverse, so it works both ways).
+ */
+export function bitReverse(value: number, numBits: number): number {
+  let reversed = 0
+  for (let bit = 0; bit < numBits; bit++) {
+    reversed |= ((value >> bit) & 1) << (numBits - 1 - bit)
+  }
+  return reversed
 }
 
 /** Formats one complex amplitude's coefficient, e.g. "0.71", "-0.71i", "0.5+0.5i". */
@@ -30,7 +51,10 @@ export function formatStateVector(state: StateVector, opts?: { epsilon?: number;
   const epsilon2 = epsilon * epsilon
 
   const terms = state.amplitudes
-    .map((amp, i) => ({ amp, label: basisLabel(i, state.numQubits) }))
+    .map((_, displayIndex) => ({
+      amp: state.amplitudes[bitReverse(displayIndex, state.numQubits)],
+      label: basisLabel(displayIndex, state.numQubits),
+    }))
     .filter(({ amp }) => abs2(amp) > epsilon2)
     .map(({ amp, label }) => `${formatComplex(amp, digits)}|${label}⟩`)
 
